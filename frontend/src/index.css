@@ -1,0 +1,3 @@
+/* The entire Tailwind setup for v4: one import, no tailwind.config.js.
+   Everything else in this app is plain utility classes on elements. */
+@import "tailwindcss";
