@@ -1,0 +1,11 @@
+# Keeps the build context small AND keeps secrets out of the image. Docker
+# does NOT read .gitignore automatically — .env has to be excluded here too,
+# explicitly, or `COPY . .` would bake real credentials into an image layer.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+.git/
+tests/

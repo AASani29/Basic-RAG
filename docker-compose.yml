@@ -1,9 +1,10 @@
-# Local development stack.
+# Local development stack: Postgres + the API.
 #
-# The `api` service is added in a later phase, once the Dockerfile exists.
-# Right now this gives you a Postgres with pgvector already compiled in, which
-# is what the app and the test suite point at by default.
+#   cp backend/.env.example backend/.env   # then fill in JWT_SECRET, GROQ_API_KEY
+#   docker compose up --build
 #
+# Or run just the database and the API locally with `uvicorn --reload`
+# (faster edit-test loop during development):
 #   docker compose up -d db
 
 services:
@@ -38,6 +39,30 @@ services:
       timeout: 3s
       # Generous: the very first boot also runs initdb and the init script.
       retries: 20
+
+  api:
+    build: ./backend
+    # Supplies JWT_SECRET, GROQ_API_KEY, and everything else NOT overridden
+    # below. Requires backend/.env to exist locally — docker compose fails
+    # fast with a clear "file not found" if you skip the setup step above.
+    env_file: ./backend/.env
+    environment:
+      # Overrides whatever DATABASE_URL is in .env (which points at
+      # localhost:5433 — the HOST-side port mapping for connecting from
+      # outside Docker). Inside the compose network, "db" is the db
+      # service's own DNS name and 5432 is its CONTAINER-internal port;
+      # "localhost" here would resolve to the api container itself, which
+      # has no Postgres running in it.
+      DATABASE_URL: postgresql+asyncpg://app:app@db:5432/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    # Runs the migration on every container start, before uvicorn: a fresh
+    # `docker compose up` always has an up-to-date schema with no separate
+    # manual step. Safe to repeat — Alembic no-ops once head is applied.
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
 volumes:
   # Named volume, so `docker compose down` keeps your data. Use
