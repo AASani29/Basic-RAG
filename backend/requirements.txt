@@ -1,0 +1,44 @@
+# Exact pins, resolved from PyPI on 2026-09-18. Exact (==) rather than
+# compatible-release (~=) so a rebuild six months from now installs the same
+# tree that was tested today.
+
+# --- web framework ---------------------------------------------------------
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+# FastAPI parses multipart bodies through this; without it BOTH the file
+# upload endpoint AND OAuth2PasswordRequestForm (login) fail to start.
+python-multipart==0.0.32
+
+# --- config / validation ---------------------------------------------------
+pydantic==2.13.5
+pydantic-settings==2.15.0
+# Backs pydantic's EmailStr. Not a transitive dep, so it is declared here.
+email-validator==2.3.0
+
+# --- database --------------------------------------------------------------
+# The [asyncio] extra pulls in greenlet, which SQLAlchemy needs to bridge its
+# sync-style ORM internals into async drivers. Plain `sqlalchemy` omits it.
+sqlalchemy[asyncio]==2.0.54
+asyncpg==0.31.0
+alembic==1.20.0
+# Supplies the SQLAlchemy `Vector` column type and the distance comparators.
+pgvector==0.5.0
+
+# --- auth ------------------------------------------------------------------
+# The [cryptography] extra provides the actual HS256 signing backend.
+python-jose[cryptography]==3.5.0
+passlib==1.7.4
+# PINNED LOW DELIBERATELY. passlib 1.7.4 (last released 2020) probes its bcrypt
+# backend by reading `bcrypt.__about__`, removed in bcrypt 4.1, and by hashing a
+# >72-byte test password, which bcrypt 5.x raises on instead of truncating.
+# Together those make passlib's bcrypt backend fail to initialise at all on
+# bcrypt 5.0.0 — verified, not theoretical. 4.0.1 is the last version that
+# works. The real fix is migrating off passlib; see README trade-offs.
+bcrypt==4.0.1
+
+# --- rag -------------------------------------------------------------------
+openai==3.15.0
+# Chunking only. Full langchain/langgraph are deliberately not installed.
+langchain-text-splitters==1.1.2
+# Text extraction for .pdf uploads.
+pypdf==6.19.0

@@ -1,0 +1,22 @@
+# --- secrets ---------------------------------------------------------------
+# Only the .example files are tracked. A real .env must never reach the repo.
+.env
+.env.*
+!.env.example
+
+# --- python ----------------------------------------------------------------
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# --- node ------------------------------------------------------------------
+node_modules/
+dist/
+
+# --- editors / os ----------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

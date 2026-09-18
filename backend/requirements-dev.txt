@@ -1,0 +1,9 @@
+# Test and lint tooling. Kept out of requirements.txt so the Docker image does
+# not ship a test runner and a linter into production.
+-r requirements.txt
+
+pytest==9.1.1
+pytest-asyncio==1.4.0
+# Drives the app in-process via ASGITransport — no live server, no open port.
+httpx==0.28.1
+ruff==0.16.8

@@ -1,0 +1,34 @@
+# Tool configuration only. There is no [project] table and no build backend
+# because this app is run and containerised, never pip-installed as a package.
+
+[tool.ruff]
+line-length = 100
+# Matches the Dockerfile's interpreter, so ruff flags syntax this app cannot run
+# even though the local venv happens to be 3.12.
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes: undefined names, unused imports
+    "I",   # isort: deterministic import order, so diffs stay small
+    "UP",  # pyupgrade: keep modern syntax
+    "B",   # flake8-bugbear: real bug patterns, e.g. mutable default args
+]
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI's whole dependency system is function calls in argument defaults,
+# which is exactly what B008 exists to flag. Suppressed only where that idiom
+# actually lives, not globally.
+"app/api/*.py" = ["B008"]
+"app/api/routes/*.py" = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Treat every `async def test_*` as a coroutine test without needing a marker
+# on each one. Explicit strict mode would add a decorator to all five tests and
+# buy nothing in a suite this size.
+asyncio_mode = "auto"
+# pytest-asyncio 1.x warns unless the fixture loop scope is stated outright.
+# "function" gives each test a fresh event loop, so no state leaks between them.
+asyncio_default_fixture_loop_scope = "function"
