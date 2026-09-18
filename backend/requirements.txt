@@ -37,8 +37,17 @@ passlib==1.7.4
 bcrypt==4.0.1
 
 # --- rag -------------------------------------------------------------------
+# The SDK, not OpenAI-the-company: the chat call goes to Groq, whose API is
+# OpenAI-SDK-compatible (same client, different api_key + base_url). See
+# core/config.py.
 openai==3.15.0
 # Chunking only. Full langchain/langgraph are deliberately not installed.
 langchain-text-splitters==1.1.2
 # Text extraction for .pdf uploads.
 pypdf==6.19.0
+# Local embeddings via ONNX runtime — no API, no key, no per-call cost.
+# Pulls in onnxruntime (~15-30MB); deliberately NOT sentence-transformers,
+# which would pull in the full PyTorch stack (hundreds of MB) for the same
+# job. First run downloads the ~70MB model file and caches it under
+# ~/.cache/fastembed.
+fastembed==0.8.0

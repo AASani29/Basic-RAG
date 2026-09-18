@@ -23,8 +23,12 @@ depends_on = None
 # was applied on a given day; if it read live config, re-running it against an
 # old database after someone changed EMBEDDING_DIM would produce a schema that
 # does not match what production actually has. Changing the dimension means
-# writing a new migration, not editing this one.
-EMBEDDING_DIM = 1536
+# writing a new migration, not editing this one — EXCEPT pre-launch, before
+# any real deployment depends on this migration's history: this project has
+# never shipped, so 384 (bge-small-en-v1.5, replacing the original
+# text-embedding-3-small choice) is edited in place here rather than layered
+# on top as a 0002 migration nobody but this repo's own dev DB will ever run.
+EMBEDDING_DIM = 384
 
 
 def upgrade() -> None:

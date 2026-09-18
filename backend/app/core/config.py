@@ -51,17 +51,35 @@ class Settings(BaseSettings):
     # .env. Comma-separated is what everyone expects; `cors_origin_list` splits.
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
-    # --- openai --------------------------------------------------------
+    # --- groq (chat completions) ----------------------------------------
     # Defaults to empty so the app still boots (and /health still answers)
-    # without a key. The RAG routes fail loudly instead; nothing else cares.
-    openai_api_key: str = ""
+    # without a key. The RAG chat route fails loudly instead; nothing else
+    # cares. Groq's API is OpenAI-SDK-compatible (same request/response
+    # shape as OpenAI's), so rag_service still uses the `openai` package as
+    # the client — only the base_url and key point somewhere else.
+    groq_api_key: str = ""
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+    # Confirmed live via GET /models against an actual account (not just
+    # Groq's docs page, which listed llama-3.3-70b-versatile as current when
+    # it was not — verified the hard way, via a real 404 model_not_found).
+    # gpt-oss-20b: general-purpose, fast, 131k context. Deliberately NOT
+    # groq/compound[-mini] — those are agentic systems that can autonomously
+    # browse/tool-call, which fights the "answer ONLY from provided context"
+    # system prompt this app relies on for grounded RAG answers.
+    chat_model: str = "openai/gpt-oss-20b"
 
-    # --- rag tuning ----------------------------------------------------
-    embedding_model: str = "text-embedding-3-small"
-    # Must equal the embedding model's output width AND the vector(n) column in
-    # migration 0001. These three move together or similarity search breaks.
-    embedding_dim: int = 1536
-    chat_model: str = "gpt-4o-mini"
+    # --- rag tuning: embeddings ------------------------------------------
+    # Run locally via fastembed (ONNX runtime), NOT a hosted API: Groq has no
+    # embeddings endpoint, and this avoids needing a second paid account just
+    # to embed text. bge-small-en-v1.5 is fastembed's own default — small
+    # (~70MB, downloaded once and cached), fast on CPU, no GPU required.
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    # Must equal the embedding model's output width AND the vector(n) column
+    # in migration 0001. These three move together or similarity search
+    # breaks. bge-small-en-v1.5 outputs 384 dims (OpenAI's text-embedding-3-
+    # small, the original choice here, outputs 1536 — this is why the
+    # migration's column width changed along with the model).
+    embedding_dim: int = 384
 
     # ~1000 characters is roughly 250 tokens: big enough to hold one complete
     # idea, small enough that the chunk's single embedding is not averaged
@@ -77,7 +95,18 @@ class Settings(BaseSettings):
     # treated as "not actually about the question" and dropped, which is what
     # makes the no-relevant-context path trigger instead of the model being
     # handed noise and inventing an answer from it.
-    max_cosine_distance: float = 0.6
+    #
+    # 0.4, not the rounder-looking 0.6: measured directly against
+    # bge-small-en-v1.5 (a small, general-purpose model has a noticeably
+    # narrower distance distribution than a large hosted one), a genuinely
+    # relevant question against a real chunk scored 0.19, while an unrelated-
+    # but-still-a-"fact"-question ("what is the capital of Mongolia" against a
+    # chunk about a satellite project) scored 0.56 — UNDER a 0.6 cutoff, which
+    # would have let it reach the chat model instead of short-circuiting.
+    # Clearly unrelated text (0.63-0.75) stays excluded either way. 0.4 is
+    # picked to sit cleanly above the relevant case and below every irrelevant
+    # one actually measured, not a value carried over from a different model.
+    max_cosine_distance: float = 0.4
     # 5 MB. Upload is synchronous, so this bounds worst-case request time as
     # much as it bounds memory.
     max_upload_bytes: int = 5 * 1024 * 1024

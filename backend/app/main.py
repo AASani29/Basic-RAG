@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.api.routes import auth, health, items
+from app.api.routes import auth, health, items, rag
 from app.core.config import Settings, get_settings
 from app.core.logging import configure_logging, get_logger
 
@@ -145,6 +145,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health.router)
     app.include_router(auth.router)
     app.include_router(items.router)
+    app.include_router(rag.router)
 
     return app
 
