@@ -1,15 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedLayout from './auth/ProtectedLayout'
+import ChatPage from './pages/ChatPage'
+import ItemsPage from './pages/ItemsPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
-
-// Placeholder until Phase 7 adds the real ItemsPage/ChatPage. Exists so the
-// route guard (ProtectedLayout) has something concrete to prove works —
-// login, refresh-persists-session, and unauthenticated-redirect all need a
-// protected route to land on — without pretending pages exist that don't.
-function ComingSoon({ title }: { title: string }) {
-  return <p className="text-gray-500">{title} — coming in the next phase.</p>
-}
 
 export default function App() {
   return (
@@ -18,8 +12,8 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
 
       <Route element={<ProtectedLayout />}>
-        <Route path="/items" element={<ComingSoon title="Items" />} />
-        <Route path="/chat" element={<ComingSoon title="Chat" />} />
+        <Route path="/items" element={<ItemsPage />} />
+        <Route path="/chat" element={<ChatPage />} />
         <Route index element={<Navigate to="/items" replace />} />
       </Route>
 

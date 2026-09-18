@@ -5,6 +5,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { getErrorMessage } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import Button from '../components/Button'
+import FormField from '../components/FormField'
 
 const schema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -53,43 +55,27 @@ export default function LoginPage() {
           </p>
         )}
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            {...register('email')}
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
-          />
-          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
-        </div>
+        <FormField
+          id="email"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          error={errors.email}
+          {...register('email')}
+        />
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            {...register('password')}
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
-          />
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-          )}
-        </div>
+        <FormField
+          id="password"
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          error={errors.password}
+          {...register('password')}
+        />
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded bg-gray-900 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
-        >
-          {isSubmitting ? 'Logging in…' : 'Log in'}
-        </button>
+        <Button type="submit" isLoading={isSubmitting} loadingText="Logging in…" className="w-full">
+          Log in
+        </Button>
 
         <p className="text-center text-sm text-gray-500">
           No account?{' '}
